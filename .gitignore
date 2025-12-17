@@ -112,3 +112,11 @@ secrets/
 *.key
 *.crt
 
+# Documentation and specs (excluded from repository)
+BACKEND/specs/
+BACKEND/README.md
+BACKEND/API_DOCUMENTATION.md
+CASSE-iBroker.postman_collection.json
+
+#Local
+
