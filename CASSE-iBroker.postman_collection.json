@@ -1,0 +1,256 @@
+{
+  "info": {
+    "_postman_id": "11111111-2222-3333-4444-555555555555",
+    "name": "CASSE - Web Services iBroker",
+    "description": "Colección para probar los Web Services iBroker de CASSE: autenticación, consulta de pólizas, adjuntos de póliza y estado de cuenta.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Autenticación (JWT)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": {\n    \"adClientId\": {{adClientId}},\n    \"adOrgId\": {{adOrgId}},\n    \"canalServicio\": \"{{canalServicio}}\",\n    \"codigo\": \"{{codigoAutenticacion}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}{{auth_path}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{auth_path}}"
+          ]
+        },
+        "description": "Servicio de autenticación JWT.\n\nCuerpo basado en el ejemplo del documento:\n{\n  \"usuario\": {\n    \"adClientId\": 0,\n    \"adOrgId\": 1,\n    \"canalServicio\": \"CASSE\",\n    \"codigo\": \"...\"\n  }\n}\n\nLa respuesta debe incluir `access_token` y `expires_in`."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  try {",
+              "    const jsonData = pm.response.json();",
+              "    if (jsonData.access_token) {",
+              "      pm.collectionVariables.set('access_token', jsonData.access_token);",
+              "      console.log('Token guardado en access_token');",
+              "    }",
+              "  } catch (e) {",
+              "    console.log('No fue posible parsear JSON de la respuesta');",
+              "  }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Consulta de pólizas",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "AUTHWOG {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Http-adOrgIdStr",
+            "value": "1",
+            "type": "text"
+          },
+          {
+            "key": "codigoServicio",
+            "value": "{{codigoServicioPolizas}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"snTomador\": \"Y\",\n  \"snAsegurado\": \"Y\",\n  \"riesgo\": \"\",\n  \"numeroPoliza\": \"\",\n  \"tipoIdentificacion\": \"CC\",\n  \"identificacion\": \"1234567890\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}{{polizas_path}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{polizas_path}}"
+          ]
+        },
+        "description": "Servicio de consulta de pólizas.\n\nHeaders clave:\n- Authorization: AUTHWOG {{access_token}}\n- Content-Type: application/json\n- X-Http-adOrgIdStr: 1\n- codigoServicio: código asignado para este servicio.\n\nParámetros de entrada (en el body):\n- snTomador (Y/N)\n- snAsegurado (Y/N)\n- riesgo (opcional)\n- numeroPoliza (opcional)\n- tipoIdentificacion (obligatorio)\n- identificacion (obligatorio)\n\nLa respuesta incluye código de respuesta, datos de póliza y detalles de asegurados, auto, riesgo, valores, etc."
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Consulta adjuntos de póliza",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "AUTHWOG {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Http-adOrgIdStr",
+            "value": "1",
+            "type": "text"
+          },
+          {
+            "key": "codigoServicio",
+            "value": "{{codigoServicioAdjuntos}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificadorPoliza\": \"{{identificadorPolizaEjemplo}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}{{adjuntos_path}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{adjuntos_path}}"
+          ]
+        },
+        "description": "Servicio para consultar los adjuntos (PDFs, carátulas) de una póliza.\n\nParámetro de entrada:\n- identificadorPoliza: ID único de la póliza.\n\nParámetros de salida:\n- codigoRespuesta (00, 01, 02, 99)\n- files: lista de adjuntos asociados a la póliza."
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Estado de cuenta de póliza / cliente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "AUTHWOG {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Http-adOrgIdStr",
+            "value": "1",
+            "type": "text"
+          },
+          {
+            "key": "codigoServicio",
+            "value": "{{codigoServicioEstadoCuenta}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipoIdentificacionCliente\": \"CC\",\n  \"identificacion\": \"1234567890\",\n  \"fechaInicial\": \"2024-01-01\",\n  \"fechaFinal\": \"2024-12-31\",\n  \"incluirPolizasCanceladas\": \"N\",\n  \"incluirNotasCredito\": \"N\",\n  \"generarDetallePagos\": \"Y\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}{{estado_cuenta_path}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{estado_cuenta_path}}"
+          ]
+        },
+        "description": "Servicio para consultar el estado de cuenta de un cliente.\n\nParámetros de entrada:\n- tipoIdentificacionCliente\n- identificacion\n- fechaInicial\n- fechaFinal\n- incluirPolizasCanceladas (Y/N)\n- incluirNotasCredito (Y/N)\n- generarDetallePagos (Y/N)\n\nParámetros de salida:\n- codigoRespuesta (00, 01, 02, 03, 99)\n- files: PDF del estado de cuenta."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://tu-servidor-ibroker.com/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_path",
+      "value": "/auth",
+      "type": "string"
+    },
+    {
+      "key": "polizas_path",
+      "value": "/polizas/consulta",
+      "type": "string"
+    },
+    {
+      "key": "adjuntos_path",
+      "value": "/polizas/adjuntos",
+      "type": "string"
+    },
+    {
+      "key": "estado_cuenta_path",
+      "value": "/estado-cuenta",
+      "type": "string"
+    },
+    {
+      "key": "adClientId",
+      "value": "0",
+      "type": "string"
+    },
+    {
+      "key": "adOrgId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "canalServicio",
+      "value": "CASSE",
+      "type": "string"
+    },
+    {
+      "key": "codigoAutenticacion",
+      "value": "T1I4S0JJMlJJQlJPS0VSQ09SRTp8ODcwazM3WzBSMw==",
+      "type": "string"
+    },
+    {
+      "key": "codigoServicioPolizas",
+      "value": "SERV_POLIZAS",
+      "type": "string"
+    },
+    {
+      "key": "codigoServicioAdjuntos",
+      "value": "SERV_ADJUNTOS",
+      "type": "string"
+    },
+    {
+      "key": "codigoServicioEstadoCuenta",
+      "value": "SERV_ESTADO_CUENTA",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "identificadorPolizaEjemplo",
+      "value": "10000001",
+      "type": "string"
+    }
+  ]
+}
